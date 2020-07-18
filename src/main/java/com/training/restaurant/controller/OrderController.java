@@ -10,6 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
 @RequestMapping("/restaurantorder")
 @Slf4j
@@ -19,8 +23,8 @@ public class OrderController {
     @Autowired
     RestaurantOrderRepository restaurantOrderRepository;
 
-    @GetMapping("/getOrder")
-    public ResponseEntity<String> getOrder
+    @GetMapping("/home")
+    public ResponseEntity<String> home
             (@RequestParam(value = "consumerId") String consumerId) {
         log.info("Calling order service for consumer id : {}", consumerId);
         ResponseEntity<String> responseEntity = new ResponseEntity<>
@@ -50,6 +54,24 @@ public class OrderController {
 
         return responseEntity;
     }
+
+
+    @GetMapping("/getOrders")
+    public ResponseEntity<String> getOrders() {
+        log.info("Fetch all orders : ");
+        List<RestaurantOrder> orderList = new ArrayList<>();
+        orderList = restaurantOrderRepository.findAll();
+        List<RestaurantOrderDto> orderdtolist = new ArrayList<>();
+
+
+
+
+
+        ResponseEntity<String> responseEntity = new ResponseEntity<>
+                ("Welcome to our new restaurant", HttpStatus.OK);
+        return responseEntity;
+    }
+
 
 
 }
