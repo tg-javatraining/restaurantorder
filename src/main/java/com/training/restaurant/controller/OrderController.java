@@ -1,6 +1,11 @@
 package com.training.restaurant.controller;
+
+import com.training.restaurant.RestaurantOrder;
 import com.training.restaurant.RestaurantOrderDto;
+import com.training.restaurant.RestaurantOrderRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,31 +15,41 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 
 public class OrderController {
+
+    @Autowired
+    RestaurantOrderRepository restaurantOrderRepository;
+
     @GetMapping("/getOrder")
     public ResponseEntity<String> getOrder
-            (@RequestParam(value="consumerId") String consumerId){
-        log.info("Calling order service for consumer id : {}",consumerId);
+            (@RequestParam(value = "consumerId") String consumerId) {
+        log.info("Calling order service for consumer id : {}", consumerId);
         ResponseEntity<String> responseEntity = new ResponseEntity<>
                 ("Welcome to our new restaurant", HttpStatus.OK);
         return responseEntity;
-   }
+    }
 
     @PostMapping("/createOrder")
     public ResponseEntity<RestaurantOrderDto> createRestaurantOrder
             (@RequestBody RestaurantOrderDto restaurantOrderDto) {
         ResponseEntity<RestaurantOrderDto> responseEntity;
+        RestaurantOrder restaurantOrder = new RestaurantOrder();
+        BeanUtils.copyProperties(restaurantOrderDto, restaurantOrder);
 
-        if (true) {
+        try {
+
+            restaurantOrderRepository.save(restaurantOrder);
+            restaurantOrderDto.setMessage("Order has been saved  ");
             responseEntity = new ResponseEntity<>
                     (restaurantOrderDto, HttpStatus.OK);
-        } else {
 
+        } catch (Exception e) {
+            log.error("Error occured: ", e.getMessage());
             responseEntity = new ResponseEntity<>
-                    (restaurantOrderDto, HttpStatus.BAD_REQUEST);
+                    (null, HttpStatus.BAD_REQUEST);
+        }
 
-        }
         return responseEntity;
-        }
+    }
 
 
 }
