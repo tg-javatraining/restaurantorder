@@ -15,7 +15,7 @@ public class OrderController {
             (@RequestParam(value="consumerId") String consumerId){
         log.info("Calling order service for consumer id : {}",consumerId);
         ResponseEntity<String> responseEntity = new ResponseEntity<>
-                ("welcome to restaurant order link", HttpStatus.OK);
+                ("Welcome to our new restaurant", HttpStatus.OK);
         return responseEntity;
    }
 
