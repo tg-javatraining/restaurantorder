@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/restaurantorder")
@@ -57,22 +58,31 @@ public class OrderController {
 
 
     @GetMapping("/getOrders")
-    public ResponseEntity<String> getOrders() {
+    public ResponseEntity<List<RestaurantOrderDto>> getOrders() {
         log.info("Fetch all orders : ");
-        List<RestaurantOrder> orderList = new ArrayList<>();
-        orderList = restaurantOrderRepository.findAll();
-        List<RestaurantOrderDto> orderdtolist = new ArrayList<>();
+        List<RestaurantOrder> orderList = restaurantOrderRepository.findAll();
+        List<RestaurantOrderDto> orderdtolist = orderList.stream().map(restaurantOrder -> new RestaurantOrderDto(
+                restaurantOrder.getCustomerId(), restaurantOrder.getOrderDetails(), "success ", true))
+                .collect(Collectors.toList());
 
-
-
-
-
-        ResponseEntity<String> responseEntity = new ResponseEntity<>
-                ("Welcome to our new restaurant", HttpStatus.OK);
+        ResponseEntity<List<RestaurantOrderDto>> responseEntity = new ResponseEntity<>
+                (orderdtolist, HttpStatus.OK);
         return responseEntity;
     }
 
+    @GetMapping("/getOrderForCustomer")
+    public ResponseEntity<List<RestaurantOrderDto>> getOrderForCustomer
+            (@RequestParam(value = "customerId") String customerId) {
+        log.info("Calling order service for consumer id : {}", customerId);
+        List<RestaurantOrder> orderList = restaurantOrderRepository.findByCustomerId(customerId);
+        List<RestaurantOrderDto> orderdtolist = orderList.stream().map(restaurantOrder -> new RestaurantOrderDto(
+                restaurantOrder.getCustomerId(), restaurantOrder.getOrderDetails(), "success ", true))
+                .collect(Collectors.toList());
 
+        ResponseEntity<List<RestaurantOrderDto>> responseEntity = new ResponseEntity<>
+                (orderdtolist, HttpStatus.OK);
+        return responseEntity;
+    }
 
 }
 
