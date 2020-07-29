@@ -40,18 +40,7 @@ public class OrderController {
         RestaurantOrder restaurantOrder = new RestaurantOrder();
         BeanUtils.copyProperties(restaurantOrderDto, restaurantOrder);
 
-        try {
-
-            restaurantOrderRepository.save(restaurantOrder);
-            restaurantOrderDto.setMessage("Order has been saved  ");
-            responseEntity = new ResponseEntity<>
-                    (restaurantOrderDto, HttpStatus.OK);
-
-        } catch (Exception e) {
-            log.error("Error occured: ", e.getMessage());
-            responseEntity = new ResponseEntity<>
-                    (null, HttpStatus.BAD_REQUEST);
-        }
+         responseEntity = SaveOrder(restaurantOrderDto, restaurantOrder);
 
         return responseEntity;
     }
@@ -81,6 +70,49 @@ public class OrderController {
 
         ResponseEntity<List<RestaurantOrderDto>> responseEntity = new ResponseEntity<>
                 (orderdtolist, HttpStatus.OK);
+        return responseEntity;
+    }
+
+    @PutMapping("/updateOrder")
+    public ResponseEntity<RestaurantOrderDto> updateRestaurantOrder
+            (@RequestBody RestaurantOrderDto restaurantOrderDto) {
+        ResponseEntity<RestaurantOrderDto> responseEntity;
+        RestaurantOrder restaurantOrder = new RestaurantOrder();
+        BeanUtils.copyProperties(restaurantOrderDto, restaurantOrder);
+
+        List<RestaurantOrder> orderList = restaurantOrderRepository.findByCustomerId(restaurantOrder.getCustomerId());
+        if (orderList.size() == 0) {
+            log.info("This user id not exist");
+
+            responseEntity = SaveOrder(restaurantOrderDto, restaurantOrder);
+
+        } else {
+            RestaurantOrder customerOrder = orderList.get(orderList.size()-1);
+            customerOrder.setOrderDetails(restaurantOrder.getOrderDetails());
+
+            responseEntity = SaveOrder(restaurantOrderDto, customerOrder);
+
+        }
+
+
+
+        return responseEntity;
+    }
+
+    private ResponseEntity<RestaurantOrderDto> SaveOrder(@RequestBody RestaurantOrderDto restaurantOrderDto, RestaurantOrder restaurantOrder) {
+        ResponseEntity<RestaurantOrderDto> responseEntity;
+        try {
+
+            restaurantOrderRepository.save(restaurantOrder);
+            restaurantOrderDto.setMessage("Order has been saved  ");
+            responseEntity = new ResponseEntity<>
+                    (restaurantOrderDto, HttpStatus.OK);
+
+        } catch (Exception e) {
+            log.error("Error occured: ", e.getMessage());
+            responseEntity = new ResponseEntity<>
+                    (null, HttpStatus.BAD_REQUEST);
+        }
         return responseEntity;
     }
 
