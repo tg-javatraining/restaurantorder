@@ -40,7 +40,7 @@ public class OrderController {
         RestaurantOrder restaurantOrder = new RestaurantOrder();
         BeanUtils.copyProperties(restaurantOrderDto, restaurantOrder);
 
-         responseEntity = saveOrder(restaurantOrderDto, restaurantOrder);
+        responseEntity = saveOrder(restaurantOrderDto, restaurantOrder);
 
         return responseEntity;
     }
@@ -87,7 +87,7 @@ public class OrderController {
             responseEntity = saveOrder(restaurantOrderDto, restaurantOrder);
 
         } else {
-            RestaurantOrder customerOrder = orderList.get(orderList.size()-1);
+            RestaurantOrder customerOrder = orderList.get(orderList.size() - 1);
             customerOrder.setOrderDetails(restaurantOrder.getOrderDetails());
 
             responseEntity = saveOrder(restaurantOrderDto, customerOrder);
@@ -95,9 +95,58 @@ public class OrderController {
         }
 
 
+        return responseEntity;
+    }
+
+    @DeleteMapping("/deleteAllOrders")
+    public ResponseEntity<String> deleteRestaurantOrder () {
+
+        ResponseEntity<String> responseEntity;
+        try {
+
+            restaurantOrderRepository.deleteAll();
+            responseEntity = new ResponseEntity<>
+                    ("Deleted successfully", HttpStatus.OK);
+
+        } catch (Exception e) {
+            log.error("Error occured: ", e.getMessage());
+            responseEntity = new ResponseEntity<>
+                    (e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
 
         return responseEntity;
     }
+
+    @DeleteMapping("/deleteOrder")
+    public ResponseEntity<String> deleteRestaurantOrder
+            (@RequestBody RestaurantOrderDto restaurantOrderDto) {
+
+        ResponseEntity<String> responseEntity;
+        RestaurantOrder restaurantOrder = new RestaurantOrder();
+        BeanUtils.copyProperties(restaurantOrderDto, restaurantOrder);
+
+        List<RestaurantOrder> orderList = restaurantOrderRepository.findByCustomerId(restaurantOrder.getCustomerId());
+        if (orderList.size() == 0) {
+            log.info("This user id not exist");
+
+            responseEntity = new ResponseEntity<>(null, HttpStatus.OK);
+
+        } else {
+            RestaurantOrder customerOrder = orderList.get(orderList.size() - 1);
+
+            responseEntity = deleteOrder(orderList);
+        }
+
+
+        return responseEntity;
+    }
+
+
+   /* @DeleteMapping("/deleteOrder/{id}")
+    public void deleteRestaurantOrder
+            (@PathVariable Long id) {
+        restaurantOrderRepository.delete(id);
+    }*/
 
     private ResponseEntity<RestaurantOrderDto> saveOrder(@RequestBody RestaurantOrderDto restaurantOrderDto, RestaurantOrder restaurantOrder) {
         ResponseEntity<RestaurantOrderDto> responseEntity;
@@ -116,19 +165,21 @@ public class OrderController {
         return responseEntity;
     }
 
-    private ResponseEntity<RestaurantOrderDto> deleteOrder(@RequestBody RestaurantOrderDto restaurantOrderDto, RestaurantOrder restaurantOrder) {
-        ResponseEntity<RestaurantOrderDto> responseEntity;
+
+
+    private ResponseEntity<String> deleteOrder(List<RestaurantOrder> orderList) {
+
+        ResponseEntity<String> responseEntity;
         try {
 
-            restaurantOrderRepository.delete(restaurantOrder);
-            restaurantOrderDto.setMessage("Order has been saved  ");
+            restaurantOrderRepository.deleteAll(orderList);
             responseEntity = new ResponseEntity<>
-                    (restaurantOrderDto, HttpStatus.OK);
+                    ("Deleted successfully", HttpStatus.OK);
 
         } catch (Exception e) {
             log.error("Error occured: ", e.getMessage());
             responseEntity = new ResponseEntity<>
-                    (null, HttpStatus.BAD_REQUEST);
+                    (e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return responseEntity;
     }
