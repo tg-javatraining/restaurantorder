@@ -1,8 +1,7 @@
 package com.training.restaurant.controller;
 
-import com.training.restaurant.RestaurantOrder;
-import com.training.restaurant.RestaurantOrderDto;
-import com.training.restaurant.RestaurantOrderRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.training.restaurant.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @RestController
@@ -23,6 +23,8 @@ public class OrderController {
 
     @Autowired
     RestaurantOrderRepository restaurantOrderRepository;
+    @Autowired
+    OrderEventProducer orderEventProducer;
 
     @GetMapping("/home")
     public ResponseEntity<String> home
@@ -35,13 +37,15 @@ public class OrderController {
 
     @PostMapping("/createOrder")
     public ResponseEntity<RestaurantOrderDto> createRestaurantOrder
-            (@RequestBody RestaurantOrderDto restaurantOrderDto) {
+            (@RequestBody RestaurantOrderDto restaurantOrderDto) throws JsonProcessingException {
         ResponseEntity<RestaurantOrderDto> responseEntity;
         RestaurantOrder restaurantOrder = new RestaurantOrder();
         BeanUtils.copyProperties(restaurantOrderDto, restaurantOrder);
 
         responseEntity = saveOrder(restaurantOrderDto, restaurantOrder);
+        OrderEvent orderEvent = new OrderEvent(new Random().nextInt(), restaurantOrder);
 
+        orderEventProducer.sendOrderEvent(orderEvent);
         return responseEntity;
     }
 

@@ -2,6 +2,8 @@ server:
   port: 8001
 
 spring:
+  profiles:
+    active: dev
   application:
     name: restaurant-order
   datasource:
@@ -20,3 +22,20 @@ eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka
+---
+
+spring:
+  profiles: dev
+  kafka:
+    template:
+      default-topic: test-topic
+    producer:
+      bootstrap-servers:
+        - localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    admin:
+      properties:
+        bootstrap.servers: localhost:9092
+
+
