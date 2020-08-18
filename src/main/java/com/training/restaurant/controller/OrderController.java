@@ -79,7 +79,7 @@ public class OrderController {
 
     @PutMapping("/updateOrder")
     public ResponseEntity<RestaurantOrderDto> updateRestaurantOrder
-            (@RequestBody RestaurantOrderDto restaurantOrderDto) {
+            (@RequestBody RestaurantOrderDto restaurantOrderDto) throws JsonProcessingException {
         ResponseEntity<RestaurantOrderDto> responseEntity;
         RestaurantOrder restaurantOrder = new RestaurantOrder();
         BeanUtils.copyProperties(restaurantOrderDto, restaurantOrder);
@@ -89,7 +89,8 @@ public class OrderController {
             log.info("This user id not exist");
 
             responseEntity = saveOrder(restaurantOrderDto, restaurantOrder);
-
+            OrderEvent orderEvent = new OrderEvent(new Random().nextInt(), restaurantOrder);
+            orderEventProducer.sendOrderEvent(orderEvent);
         } else {
             RestaurantOrder customerOrder = orderList.get(orderList.size() - 1);
             customerOrder.setOrderDetails(restaurantOrder.getOrderDetails());
